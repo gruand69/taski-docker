@@ -1,0 +1,37 @@
+# Файл docker-compose.yml
+version: '3'
+
+volumes:
+  pg_data_production:
+  static_volume:
+
+services:
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data_production:/var/lib/postgresql/data
+  backend:
+    image: gruand69/taski_backend
+    env_file: .env
+    volumes:
+      - static_volume:/backend_static
+  frontend:
+    image: gruand69/taski_frontend
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static_volume:/frontend_static
+# Добавляем новый контейнер: gateway.
+  gateway:
+    # Сбилдить и запустить образ, 
+    # описанный в Dockerfile в папке gateway
+    image: gruand69/taski_gateway
+    env_file: .env
+    volumes:
+      - static_volume:/staticfiles/
+    # Ключ ports устанавливает
+    # перенаправление всех запросов с порта 8000 хоста
+    # на порт 80 контейнера.
+    ports:
+      - 8000:80
